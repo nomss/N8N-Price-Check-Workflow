@@ -1,0 +1,822 @@
+{
+  "name": "Price Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "extractionValues": {
+          "values": [
+            {
+              "key": "price",
+              "cssSelector": "={{$node[\"initItem\"].json[\"selector\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "HTML Extract",
+      "type": "n8n-nodes-base.htmlExtract",
+      "position": [
+        1680,
+        280
+      ],
+      "typeVersion": 1,
+      "id": "3215276a-f221-48b3-8d56-642c447a6cfd"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 15,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        420,
+        300
+      ],
+      "typeVersion": 1,
+      "id": "4f3b50fe-eae7-4aef-a84f-0170fd4bc08b"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\nvar price = String(item.price).replace(\",\", \".\");\nprice = parseFloat(price);\n//price = price.replace(/\\D/g, '');\n//item.price = String(item.price).replace(\",\", \".\");\n//item.price = parseFloat(item.price);\n\nitem.priceExists = (price > 0 ? true : false)\nitem.price = price;\n\n// Update its data\nglobalData.actualPrice = item;\n\nreturn item;"
+      },
+      "name": "getActualPrice",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        1870,
+        410
+      ],
+      "typeVersion": 1,
+      "id": "4aba12d8-bd5a-492d-b9d9-24d3717abc33"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\nglobalData.iteration = 0;\n//var thiselem = $node[\"initItem\"].json;\n\n//const s1 = {'slug': thiselem.slug, \"link\": thiselem.link, \"selector\": thiselem.selector, \"price\":$node[\"getActualPrice\"].json.price, \"currency\": thiselem.currency};\n//const s2 = {'slug': thiselem.slug+'2', \"link\": thiselem.link, \"selector\": thiselem.selector, \"price\":$node[\"getActualPrice\"].json.price, \"currency\": thiselem.currency};\n//const s3 = {'slug': thiselem.slug+'3', \"link\": thiselem.link, \"selector\": thiselem.selector, \"price\":$node[\"getActualPrice\"].json.price, \"currency\": thiselem.currency};\n\nreturn $node[\"changeME\"].json.myWatchers;\n"
+      },
+      "name": "FunctionItem",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        2620,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "816c282d-dff6-46dc-8a32-d589ad99de8a"
+    },
+    {
+      "parameters": {
+        "fileName": "/data/kopacky.json",
+        "dataPropertyName": "=price",
+        "options": {}
+      },
+      "name": "Write Binary File1",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "position": [
+        3000,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "8be02915-fcf0-4418-9f5a-88d5fc6b2413"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "destinationKey": "price",
+        "options": {}
+      },
+      "name": "Move Binary Data1",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "position": [
+        2820,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "65e78a1b-b29e-4d04-9083-5fbe747c299f"
+    },
+    {
+      "parameters": {
+        "fileName": "/data/kopacky.json",
+        "dataPropertyName": "=price",
+        "options": {}
+      },
+      "name": "SaveToFile",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "position": [
+        2920,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "49c5de4d-e59c-49d2-80fc-e8e691590987"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "destinationKey": "price",
+        "options": {}
+      },
+      "name": "JsonToBinary",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "position": [
+        2780,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "203dc2ae-74a2-4aa1-bf51-f6b7098a26e3"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\nvar counter = globalData.iteration;\n\nitem.myWatchers[counter].watchersCount = item.watchersCount;\nitem.myWatchers[counter].canContinue = (globalData.iteration < 1);\n//item.myWatchers[counter].canContinue = false;\n\nglobalData.iteration = counter + 1;\n\nreturn item.myWatchers[counter];"
+      },
+      "name": "initItem",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        1270,
+        410
+      ],
+      "typeVersion": 1,
+      "id": "b452b4a0-20cf-480d-b84c-ce7e13465bc5"
+    },
+    {
+      "parameters": {
+        "filePath": "/data/kopacky.json",
+        "dataPropertyName": "savedItems"
+      },
+      "name": "savedItems",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "position": [
+        2120,
+        680
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true,
+      "id": "0790a006-6b4e-46cb-a645-5ff6d39bfbea",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "sourceKey": "savedItems",
+        "options": {}
+      },
+      "name": "itemsToJSON",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "position": [
+        2300,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "e508a444-43b5-43b3-b6f1-319caea62386"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\nglobalData.iteration = 0;\n\nreturn item;"
+      },
+      "name": "initItem1",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        800,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "465bfe1c-2241-4879-9d3d-fd5fb2689aaa"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\nvar myitems = [];\nvar i;\nfor (i = 0; i < item.items.length; i++) { \n  if($node[\"initItem\"].json.slug == item.items[i].slug && $node[\"getActualPrice\"].json.price < item.items[i].price) {\n    item.items[i].price = $node[\"getActualPrice\"].json.price;\n  }\n  myitems.push(item.items[i]);\n} \n\nreturn myitems;\n"
+      },
+      "name": "updateSavedItems",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        2640,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "2e260376-b617-4d7b-a61f-97cc871d1518"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\nvar oldPrice = null;\nvar myitems = [];\nvar i;\nfor (i = 0; i < item.length; i++) {\n  if($node[\"initItem\"].json.slug == item[i].slug) {\n\n    item[i].link = $node[\"initItem\"].json.link;\n    item[i].selector = $node[\"initItem\"].json.selector;\n    item[i].currency = $node[\"initItem\"].json.currency;\n    \n    if(!item[i].price){\n      item[i].price = $node[\"getActualPrice\"].json.price;\n    }\n    \n    if($node[\"getActualPrice\"].json.price < item[i].price){\n      oldPrice = item[i].price;\n      item[i].price = $node[\"getActualPrice\"].json.price;\n    }\n    \n    \n  }\n  \n  myitems.push(item[i]);\n} \n\n//item.somar = $node[\"initItem\"].json;\n//return globalData.actualPrice;\n\nvar itemm = {};\nitemm.items = myitems;\nitemm.oldPrice = oldPrice;\nreturn itemm;\n"
+      },
+      "name": "updateSavedItems1",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        2460,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "11083470-7f38-4de9-ac17-02a8319198d1"
+    },
+    {
+      "parameters": {
+        "path": "=start-price-check",
+        "options": {}
+      },
+      "id": "48a57746-a2e1-47a5-972d-028bc12fc538",
+      "name": "Webhook - Manual Start",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        420,
+        600
+      ],
+      "webhookId": "5c92f117-eda8-48ad-8640-c89c412555a9"
+    },
+    {
+      "parameters": {
+        "functionCode": "const globalData = getWorkflowStaticData('global');\n\n//{'slug': 'kopacky', 'link': 'https://www.adsport.sk/kopacky-lisovky-adidas-x-19-3-ll-fg-ef0598/#1131861', 'currency': 'EUR'}[]\nvar myWatchers = [\n{'slug': 'kopacky', 'link': 'https://www.adsport.sk/kopacky-lisovky-adidas-x-19-3-ll-fg-ef0598/#1131861', 'selector':'.prices > strong:nth-child(1) > span:nth-child(1)', 'currency': 'EUR'},\n{'slug': 'kopacky2', 'link': 'https://www.adsport.sk/turfy-adidas-ace-tango-17-3-tf-by2203/', 'selector':'.col-xs-4 > strong:nth-child(1) > span:nth-child(1)', 'currency': 'EUR'},\n{'slug': 'mobilcek', 'link': 'https://mobil.bazos.sk/inzerat/112253662/predam-odolny-doogee-s60-52-4g-lte-nfc.php', 'selector':'.listadvlevo > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(2) > b:nth-child(2)', 'currency': 'EUR'},\n{'slug': 'ADIZERO RC 2', 'link': 'https://www.adsport.sk/panske-bezecke-topanky-adidas-adizero-rc-2-eg1187/', 'selector':'.col-xs-4 > strong:nth-child(1) > span:nth-child(1)', 'currency': 'EUR'}\n];\n\nitem.myWatchers = myWatchers;\nitem.watchersCount = myWatchers.length;\nglobalData.myWatchers = myWatchers;\n\nreturn item;"
+      },
+      "name": "Price Check",
+      "type": "n8n-nodes-base.functionItem",
+      "position": [
+        1060,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "6d36049f-d7fe-4187-b31f-ce27895ae508"
+    },
+    {
+      "parameters": {
+        "url": "={{$node[\"initItem\"].json[\"link\"]}}",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Fetch the Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1480,
+        280
+      ],
+      "typeVersion": 1,
+      "id": "f278a6aa-0d90-40ee-97e2-f8a91d0b7be6"
+    },
+    {
+      "parameters": {
+        "sendTo": "arain.noman.a@gmail.com",
+        "subject": "Price Change Notification",
+        "emailType": "text",
+        "message": "Price Change Notification",
+        "options": {}
+      },
+      "id": "4f7ae90a-9719-4233-b789-5122176c8da9",
+      "name": "Notify Price",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2220,
+        80
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NcmzWPTpwl7h2MRK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-4045334238",
+        "text": "Price Change Notification",
+        "additionalFields": {}
+      },
+      "id": "39139762-2af9-41af-8e68-2d9594e767ea",
+      "name": "Notify Price Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        2220,
+        260
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "HoCnWhIE1SA5e1ar",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$node[\"getActualPrice\"].json[\"price\"]}}",
+              "value2": "={{$node[\"updateSavedItems1\"].json[\"oldPrice\"]}}"
+            }
+          ],
+          "string": []
+        }
+      },
+      "name": "IF Better Price",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        3060,
+        680
+      ],
+      "typeVersion": 1,
+      "id": "4377c5f0-5c0c-4064-8da0-e50101de4148"
+    },
+    {
+      "parameters": {
+        "sendTo": "arain.noman.a@gmail.com",
+        "subject": "Better Price Change Notification",
+        "emailType": "text",
+        "message": "Price Change Notification",
+        "options": {}
+      },
+      "id": "2a1674cb-b528-4e1f-bf90-4a9400d1024c",
+      "name": "Notify Better Price",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3240,
+        580
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NcmzWPTpwl7h2MRK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-4045334238",
+        "text": "Better Price Change Notification",
+        "additionalFields": {}
+      },
+      "id": "d701a58f-d7f3-4c00-a214-667ae6904b97",
+      "name": "Notify Better Price Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        3240,
+        700
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "HoCnWhIE1SA5e1ar",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [],
+          "boolean": [
+            {
+              "value1": "={{$node[\"initItem\"].json[\"canContinue\"]}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "IF should continue",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        3520,
+        780
+      ],
+      "typeVersion": 1,
+      "id": "3351cba2-145c-4f49-a1fc-b7904f98253b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [],
+          "boolean": [
+            {
+              "value1": "={{$node[\"getActualPrice\"].json[\"priceExists\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "IF should notify",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2040,
+        410
+      ],
+      "typeVersion": 1,
+      "id": "2d6a6542-0671-4f27-8b06-69ab0ea2cbba"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.checkifexists }}",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "IF data type",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2440,
+        440
+      ],
+      "typeVersion": 1,
+      "id": "fdc7efb6-6110-4613-8f94-4c56bc6b8345"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.threadId }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "IF should save",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1940,
+        700
+      ],
+      "typeVersion": 1,
+      "id": "bc833031-f6aa-45e0-84a6-5116767c93e8"
+    }
+  ],
+  "pinData": {
+    "Webhook - Manual Start": [
+      {
+        "json": {
+          "headers": {
+            "host": "noman-arain.app.n8n.cloud",
+            "x-request-id": "23c7abafedc8e76396aa2c439efe7b34",
+            "x-real-ip": "96.255.131.181",
+            "x-forwarded-for": "96.255.131.181",
+            "x-forwarded-host": "noman-arain.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-scheme": "https",
+            "x-scheme": "https",
+            "cache-control": "max-age=0",
+            "sec-ch-ua": "\"Chromium\";v=\"118\", \"Microsoft Edge\";v=\"118\", \"Not=A?Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.61",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
+            "accept-language": "en-US,en;q=0.9",
+            "if-none-match": "W/\"22-6OS7cK0FzqnV2NeDHdOSGS1bVUs\"",
+            "cookie": "_ga=GA1.2.1472441264.1698751239; _gid=GA1.2.153644672.1698751241; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FG6GFY6Iw1qCVrMUhfsrKDAK0LI82v6c6agO%2BlkIk9w0cKkln9HUIe; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX18fZ894NczeJ7MBH8ZCw%2B7CMUa%2BOGjCOX8%3D; _ga_1EB8LCPG5B=GS1.2.1698751241.1.0.1698751241.0.0.0; ajs_anonymous_id=19e2c039-b4ce-4140-9c1b-cb65509a416a; _ga_0SC4FF2FH9=GS1.1.1698751238.1.1.1698751247.51.0.0; n8n-auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjA1YTMzMGU3LWI2N2QtNDAzNC1iZWI4LTEyODk4ZGI5ZTM1ZiIsImVtYWlsIjoibm9tYW4uYS51cHdvcmtAZ21haWwuY29tIiwicGFzc3dvcmQiOiIxNjBmZTJlZTBkNWE3MjliOGEzNTAyYmVmNjE4MmI5NzE4MDhmYjhhZjZhNDczNWQzMDZhMTc0MDAzOWJiMTQ4IiwiaWF0IjoxNjk4NzUxMjcxLCJleHAiOjE2OTkzNTYwNzF9.fC3fhhvy6ejnkWaAVTQ1N5yFBAIZdAIwjwpAH41wuHQ; n8n_anonymous_id=6dcfb538-d0e4-491c-be61-0e8d41e98e7e; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FKf3PdsJ%2FB9TPelo2YEbjN7%2BrNg1%2FNU%2BwE9NUk1MedtxWL0EiMZ12MwPFAT7HYIm%2FaU6eJDy1RLw%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX1%2BVXnoJVSH3BnurBPyBmIgQDYezH%2FzoxRQ%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX18wocwNPG168OCKz4k%2FER9BEosVYqDlBIU%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2B8v8HOnBRHQ9FjE54oBkOW33i3VPV5cfYTSGoKRTS%2FiTge4T0oqqsq2qYxbGGyI%2BShy%2Bx5nVVlkCFHNEb0fRX90XZjB%2B86mkzQQt9CHP%2FsCFyV1GIy4EzW2qgoq0Wv%2Fr8CaSa4S866TNkpmp9tV4rDmFdoTTLmBco%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19pRT89YPj8CFX%2B9gXUfVC0khj8QLApSuroj%2Fx366zArTPnKTVjSbNNWwU9M4Z8U%2FiA60T%2BndnWt9boWtTSI8hyXpeIUmUDDxJOZ3knr6k4QQxdhLIvWzi0X0xwwEe61RpdEkm8tnTsfhzcO0zU3%2Brv%2FZQM%2BzcI%2BrhyLUUupnAmrTVH4bDvwm95twoUWB9yM8LU09Fkswb0lQ%3D%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FRW2O0NPNNbq1%2F099tz649ReZbQuNlKHivJM0dSNJP99LuY8YsaKtJTaTHaYX1peqjm5jPykUR%2BnFIKZHlVhS4kG8WBxo2J%2B9jyHqElxXT9u9NPUqddAvi2Tx%2BCxbOnbIgpZa7S%2BFKPQ%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24active_feature_flags%22%3A%5B%22011_ask_AI%22%2C%22009_choosing_trial_plan%22%2C%22006_cloud_opt_in%22%2C%22schema-view%22%5D%2C%22%24enabled_feature_flags%22%3A%7B%22011_ask_AI%22%3A%22gpt3%22%2C%22009_choosing_trial_plan%22%3A%22variant%22%2C%22006_cloud_opt_in%22%3A%22control%22%2C%22schema-view%22%3Atrue%7D%2C%22%24feature_flag_payloads%22%3A%7B%7D%2C%22distinct_id%22%3A%22329000da1f944cd50988ae9a8c100b581b9393f0c1c62f7b5b4c60d57f89152c%2305a330e7-b67d-4034-beb8-12898db9e35f%22%2C%22%24device_id%22%3A%22018b8577-57d0-7123-8a26-8894486050a4%22%2C%22%24user_state%22%3A%22identified%22%2C%22%24sesid%22%3A%5B1698755110980%2C%22018b8577-57d1-7108-a43a-58ed65632c7a%22%2C1698751272913%5D%2C%22%24user_id%22%3A%22329000da1f944cd50988ae9a8c100b581b9393f0c1c62f7b5b4c60d57f89152c%2305a330e7-b67d-4034-beb8-12898db9e35f%22%2C%22%24stored_person_properties%22%3A%7B%22instance_id%22%3A%22329000da1f944cd50988ae9a8c100b581b9393f0c1c62f7b5b4c60d57f89152c%22%2C%22created_at_timestamp%22%3A1698750942270%7D%2C%22%24session_recording_enabled_server_side%22%3Atrue%2C%22%24console_log_recording_enabled_server_side%22%3Afalse%2C%22%24session_recording_recorder_version_server_side%22%3A%22v2%22%2C%22%24autocapture_disabled_server_side%22%3Afalse%7D"
+          },
+          "params": {},
+          "query": {}
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "initItem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "initItem": {
+      "main": [
+        [
+          {
+            "node": "Fetch the Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "initItem1": {
+      "main": [
+        [
+          {
+            "node": "Price Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SaveToFile": {
+      "main": [
+        [
+          {
+            "node": "IF Better Price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "savedItems": {
+      "main": [
+        [
+          {
+            "node": "itemsToJSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "itemsToJSON": {
+      "main": [
+        [
+          {
+            "node": "updateSavedItems1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FunctionItem": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Extract": {
+      "main": [
+        [
+          {
+            "node": "getActualPrice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JsonToBinary": {
+      "main": [
+        [
+          {
+            "node": "SaveToFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getActualPrice": {
+      "main": [
+        [
+          {
+            "node": "IF should notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updateSavedItems": {
+      "main": [
+        [
+          {
+            "node": "JsonToBinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Binary Data1": {
+      "main": [
+        [
+          {
+            "node": "Write Binary File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updateSavedItems1": {
+      "main": [
+        [
+          {
+            "node": "updateSavedItems",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Binary File1": {
+      "main": [
+        [
+          {
+            "node": "IF should continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Manual Start": {
+      "main": [
+        [
+          {
+            "node": "initItem1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price Check": {
+      "main": [
+        [
+          {
+            "node": "initItem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch the Data": {
+      "main": [
+        [
+          {
+            "node": "HTML Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Price": {
+      "main": [
+        [
+          {
+            "node": "IF data type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Price Telegram": {
+      "main": [
+        [
+          {
+            "node": "IF data type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Better Price": {
+      "main": [
+        [
+          {
+            "node": "Notify Better Price",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Better Price Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF should continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Better Price": {
+      "main": [
+        [
+          {
+            "node": "IF should continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Better Price Telegram": {
+      "main": [
+        [
+          {
+            "node": "IF should continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF should continue": {
+      "main": [
+        [
+          {
+            "node": "Price Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF should notify": {
+      "main": [
+        [
+          {
+            "node": "Notify Price",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Price Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF data type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF data type": {
+      "main": [
+        [
+          {
+            "node": "FunctionItem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF should save",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF should save": {
+      "main": [
+        [
+          {
+            "node": "savedItems",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF should continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52ecae68-b1fa-49ff-b783-27021ce4780a",
+  "id": "TGKODRUXaHhsAhrh",
+  "meta": {
+    "instanceId": "329000da1f944cd50988ae9a8c100b581b9393f0c1c62f7b5b4c60d57f89152c"
+  },
+  "tags": []
+}
